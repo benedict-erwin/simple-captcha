@@ -144,7 +144,10 @@ class Captcha
 
     private function generateCaptcha()
     {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $this->generateBackground();
         $black = imagecolorallocate($this->image, 0, 0, 0);
         $white = imagecolorallocate($this->image, 255, 255, 255);

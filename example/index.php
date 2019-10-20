@@ -1,11 +1,21 @@
 <?php
 session_start();
+require_once '../src/Captcha.php';
+if (isset($_GET['captcha_img']) && $_GET['captcha_img']) {
+    $captcha_str = new Captcha;
+    $captcha_str->imageSize(150, 50)
+        ->setChar(2)
+        ->setCaptchaLen(3)
+        ->dificulty(0)
+        ->render();
+    exit();
+}
 if (isset($_GET['captcha_challenge']) && $_GET['captcha_challenge'] == $_SESSION['captcha_text']) {
     echo '<a href="./" style="text-decoration:none;">';
     echo '<pre>';
     print_r($_SESSION);
     echo '</a>';
-    die();
+    exit();
 }
 ?>
 <html>
@@ -20,7 +30,7 @@ if (isset($_GET['captcha_challenge']) && $_GET['captcha_challenge'] == $_SESSION
     <form class="form-inline">
         <div class="form-group mb-2">
             <label for="staticEmail2" class="sr-only">Email</label>
-            <img style="padding-right:5px;" src="captcha_image.php" alt="CAPTCHA" class="form-group captcha-image"><i class="fa fa-refresh refresh-captcha"></i>
+            <img style="padding-right:5px;" src="index.php?captcha_img=1" alt="CAPTCHA" class="form-group captcha-image"><i class="fa fa-refresh refresh-captcha"></i>
         </div>
         <div class="form-group mx-sm-3 mb-2">
             <label for="inputPassword2" class="sr-only">Password</label>
@@ -31,7 +41,7 @@ if (isset($_GET['captcha_challenge']) && $_GET['captcha_challenge'] == $_SESSION
     <script>
         var refreshButton = document.querySelector(".refresh-captcha");
         refreshButton.onclick = function() {
-            document.querySelector(".captcha-image").src = 'captcha_image.php?' + Date.now();
+            document.querySelector(".captcha-image").src = 'index.php?captcha_img=' + Date.now();
         }
     </script>
 </body>
