@@ -15,8 +15,12 @@ class Captcha
     private $space;
     private $level;
     private $fonts;
+    private $sess_name;
 
-    public function __construct()
+    /**
+     * Constructor
+     */
+    public function __construct(String $session_name)
     {
         $this->numb = '0123456789';
         $this->alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -27,25 +31,47 @@ class Captcha
         $this->space = 150;
         $this->level = 0;
         $this->fonts = [dirname(__FILE__) . DIRECTORY_SEPARATOR . 'fonts' . DIRECTORY_SEPARATOR . 'Bebas-Regular.otf'];
+        $this->sess_name = $session_name;
     }
 
+    /**
+     * Set captcha char length
+     * How many digits shown
+     *
+     * @param int $len
+     */
     public function setCaptchaLen(int $len = 0)
     {
         $this->captcha_len = ($len !== 0) ? $len : $this->captcha_len;
         return $this;
     }
 
+    /**
+     * Get captcha char length
+     *
+     * @return int
+     */
     public function getCaptchaLen()
     {
         return $this->captcha_len;
     }
 
+    /**
+     * Set Captcha font size
+     *
+     * @param int $size
+     */
     public function setCaptchaSize(int $size = 25)
     {
         $this->size = $size;
         return $this;
     }
 
+    /**
+     * Get Captcha font size
+     *
+     * @return int
+     */
     public function getCaptchaSize()
     {
         return $this->size;
@@ -54,7 +80,12 @@ class Captcha
     /**
      * Set Default charset
      *
-     * @param level 0:numeric 1:alpha 2:alphanumeric
+     * Level code
+     *  0:numeric
+     *  1:alpha
+     *  2:alphanumeric
+     *
+     * @param int $level
      *
      */
     public function setChar(int $level = 0)
@@ -63,6 +94,11 @@ class Captcha
         return $this;
     }
 
+    /**
+     * Generate random string
+     *
+     * @return string
+     */
     public function generateString()
     {
         $chars = ($this->level > 0) ? (($this->level > 1) ? $this->numb . $this->alpha : $this->alpha) : $this->numb;
@@ -76,6 +112,12 @@ class Captcha
         return $rand_str;
     }
 
+    /**
+     * Set Image Size
+     *
+     * @param int $width
+     * @param int $height
+     */
     public function imageSize(int $width = 200, int $height = 50)
     {
         $this->width = $width;
@@ -83,6 +125,9 @@ class Captcha
         return $this;
     }
 
+    /**
+     * Generate captcha background image
+     */
     private function generateBackground()
     {
         $this->image = imagecreatetruecolor($this->width, $this->height);
@@ -108,6 +153,12 @@ class Captcha
 
     /**
      * Set Captcha dificulty
+     *
+     * Dificult code
+     *  0:easy
+     *  1:medium
+     *  2:hard
+     *  3:random
      *
      * @param number 0:easy 1:medium 2:hard 3:random
      *
@@ -142,6 +193,9 @@ class Captcha
         return $this;
     }
 
+    /**
+     * Generate Captcha Image
+     */
     private function generateCaptcha()
     {
         if (session_status() == PHP_SESSION_NONE) {
@@ -153,15 +207,42 @@ class Captcha
         $white = imagecolorallocate($this->image, 255, 255, 255);
         $textcolors = [$black, $white];
         $captcha_str = $this->generateString();
-        $_SESSION['captcha_text'] = $captcha_str;
+        $_SESSION[$this->sess_name] = $captcha_str;
 
         for ($i = 0; $i < $this->getCaptchaLen(); $i++) {
             $letter_space = 135 / $this->getCaptchaLen();
             $initial = 15;
-            imagettftext($this->image, $this->size, rand(-15, 15), $initial + $i * $letter_space, rand(35, 45), $textcolors[rand(0, 1)], $this->fonts[array_rand($this->fonts)], $captcha_str[$i]);
+            imagettftext(
+                $this->image,
+                $this->size,
+                rand(-15, 15),
+                $initial + $i * $letter_space,
+                rand(35, 45),
+                $textcolors[rand(0, 1)],
+                $this->fonts[array_rand($this->fonts)],
+                $captcha_str[$i]
+            );
         }
     }
 
+    /**
+     * Verify Captcha
+     *
+     * Check if given string is match with captcha_text
+     *
+     * @param string $captcha
+     * @return boolean
+     */
+    public function verify(String $captcha)
+    {
+        $result = ($_SESSION[$this->sess_name] == $captcha) ? true:false;
+        unset($_SESSION[$this->sess_name]);
+        return $result;
+    }
+
+    /**
+     * Render Captcha Image into browser
+     */
     public function render()
     {
         $this->generateCaptcha();

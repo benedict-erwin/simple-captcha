@@ -1,19 +1,21 @@
 <?php
 session_start();
 require_once '../src/Captcha.php';
+$captcha_str = new Captcha('nama_captcha');
 if (isset($_GET['captcha_img']) && $_GET['captcha_img']) {
-    $captcha_str = new Captcha;
     $captcha_str->imageSize(150, 50)
         ->setChar(2)
-        ->setCaptchaLen(3)
-        ->dificulty(0)
+        ->setCaptchaSize()
+        ->setCaptchaLen(5)
+        ->dificulty(3)
         ->render();
     exit();
 }
-if (isset($_GET['captcha_challenge']) && $_GET['captcha_challenge'] == $_SESSION['captcha_text']) {
+
+if (isset($_GET['captcha_challenge']) && $captcha_str->verify($_GET['captcha_challenge'])) {
     echo '<a href="./" style="text-decoration:none;">';
     echo '<pre>';
-    print_r($_SESSION);
+    echo 'Captcha solved!';
     echo '</a>';
     exit();
 }

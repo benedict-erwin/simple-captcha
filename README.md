@@ -8,7 +8,7 @@ Simple Captcha Helper
 * Load into your php file (look at example folder)
 ```php
     require_once 'src/Captcha.php';
-    $captcha_str = new Captcha;
+    $captcha_str = new Captcha('nama_captcha');
     $captcha_str->imageSize(150, 50)
         ->setChar(2)
         ->setCaptchaLen(3)
